@@ -1,9 +1,9 @@
 import os, requests
 from github import Github
-from utils.config import GITHUB_TOKEN, GITHUB_USERNAME
+# from utils.config import GITHUB_TOKEN, GITHUB_USERNAME
 
-# GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-# GITHUB_USERNAME = os.getenv("GITHUB_USERNAME")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+GITHUB_USERNAME = os.getenv("GITHUB_USERNAME")
 
 def fetch_existing_repo_and_code(repo_name):
     # g = Github(GITHUB_TOKEN)
@@ -73,3 +73,4 @@ async def update_existing_repo(repo, updated_code, updated_readme):
     commit_sha = repo.get_commits()[0].sha
     pages_url = f"https://{GITHUB_USERNAME}.github.io/{repo.name}/"
     return commit_sha, pages_url
+
