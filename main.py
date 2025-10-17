@@ -3,7 +3,6 @@ import os, httpx, asyncio
 # from utils.config import STUDENT_SECRET
 from fastapi.responses import JSONResponse
 from fastapi import FastAPI, Request, HTTPException
-from utils.repo_db import set_repo_data, get_repo_data
 from utils.ai_generator import generate_app_code, modify_app_code
 from utils.github_utils import create_and_deploy_repo, update_existing_repo, fetch_existing_repo_and_code
 
@@ -42,24 +41,27 @@ async def process_task_r1(data):
         round_ = data["round"]
         nonce = data["nonce"]
         brief = data["brief"]
-        checks = data["checks"]
+        # checks = data["checks"]
         eval_url = data["evaluation_url"]
         attachments = data.get("attachments", [])
 
         print(f"Starting Round 1 for task: {task}")
 
-        # Step 1. Generate code using AI Pipe, including attachments
+        # Step 1. Retrieve repo name from task name
+        repo_name = task.replace(' ', '-')
+
+        # Step 2. Generate code using AI Pipe, including attachments
         code, readme = await generate_app_code(brief, attachments)
         print("1.1. Generated app code.")
 
-        # Step 2. Push to GitHub and enable Pages
-        repo_url, commit_sha, pages_url = await create_and_deploy_repo(task, code, readme)
+        # Step 3. Push to GitHub and enable Pages
+        repo_url, commit_sha, pages_url = await create_and_deploy_repo(repo_name, code, readme)
         print("1.2. Created and published Github Repo.")
 
         # Step 3. Save repo mapping for future rounds
-        repo_name = repo_url.split("/")[-1]
-        set_repo_data(task, repo_name, repo_url)
-        print("1.3. Saved repo data for future rounds.")
+        # repo_name = repo_url.split("/")[-1]
+        # set_repo_data(task, repo_name, repo_url)
+        # print("1.3. Saved repo data for future rounds.")
 
         # Step 4. Notify evaluation API
         payload = {
@@ -75,7 +77,7 @@ async def process_task_r1(data):
         async with httpx.AsyncClient(timeout=httpx.Timeout(100.0)) as client:
             r = await client.post(eval_url, json=payload, timeout=30)
             r.raise_for_status()
-            print(f"1.4. Evaluation notified for {task}")
+            print(f"1.3. Evaluation notified for {task}")
 
     except Exception as e:
         print(f"{repr(e)} - Error during Round 1 process: {e}")
@@ -97,16 +99,17 @@ async def process_task_r2(data):
 
         print(f"Starting Round 2 update for {task}")
 
-        # Step 1. Retrieve repo name from persistent mapping
-        repo = get_repo_data(task)
-        if not repo:
-            print(f"2.1. Repo for task '{task}' not found!")
-            return
-        else:
-            print(f"2.1. Found repo '{repo["repo_name"]}' for task '{task}'")
+        # Step 1. Retrieve repo name from task name
+        repo_name = task.replace(' ', '-')
+
+        # if not repo:
+        #     print(f"2.1. Repo for task '{repo_name}' not found!")
+        #     return
+        # else:
+        #     print(f"2.1. Found repo '{repo_name}' for task '{task}'")
 
         # Step 2. Fetch existing repo and code
-        repo, existing_code = fetch_existing_repo_and_code(repo["repo_name"])
+        repo, existing_code = fetch_existing_repo_and_code(repo_name)
 
         print("2.2. Fetched existing code in Repo.")
 
