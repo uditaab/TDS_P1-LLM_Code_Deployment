@@ -22,7 +22,7 @@ async def handle_task(request: Request):
     # Respond immediately
     response = {"status": "ok", "message": "Task received"}
 
-    print(f"Received task for Round {data.get("round")}...")
+    print(f"Received task for Round {data.get('round')}...")
 
     if data.get("round") == 1:
         asyncio.create_task(process_task_r1(data))
@@ -145,3 +145,4 @@ async def process_task_r2(data):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+
