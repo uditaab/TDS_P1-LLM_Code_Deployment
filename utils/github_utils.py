@@ -1,22 +1,22 @@
 import os, requests
 from github import Github
-# from utils.config import GITHUB_TOKEN, GITHUB_USERNAME
+from utils.config import GITHUB_TOKEN, GITHUB_USERNAME
 
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-GITHUB_USERNAME = os.getenv("GITHUB_USERNAME")
+# GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+# GITHUB_USERNAME = os.getenv("GITHUB_USERNAME")
 
 def fetch_existing_repo_and_code(repo_name):
-    g = Github(GITHUB_TOKEN)
-    repo = g.get_repo(f"{GITHUB_USERNAME}/{repo_name}")
+    # g = Github(GITHUB_TOKEN)
+    print(f"Repo Name: {repo_name}")
+    repo = Github(GITHUB_TOKEN).get_repo(f"{GITHUB_USERNAME}/{repo_name}")
     index_file = repo.get_contents("index.html")
     return repo, index_file.decoded_content.decode("utf-8")
 
-async def create_and_deploy_repo(task, code, readme):
+async def create_and_deploy_repo(repo_name, code, readme):
     """Create a GitHub repo, push files, and enable GitHub Pages."""
-    g = Github(GITHUB_TOKEN)
-    user = g.get_user()
+    # g = Github(GITHUB_TOKEN)
+    user = Github(GITHUB_TOKEN).get_user()
 
-    repo_name = task.replace(' ', '-')
     repo = user.create_repo(repo_name, private=False, auto_init=False)
 
     mitLicense = """MIT License
